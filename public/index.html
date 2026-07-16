@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+html<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
@@ -28,3 +28,255 @@
     background-size:34px 34px;
     color:var(--paper);
     font-family:'Manrope',sans-serif;
+    min-height:100vh;
+  }
+
+  .ticker-bar{background:var(--green);overflow:hidden;white-space:nowrap;padding:7px 0;border-bottom:1px solid #1f6b42}
+  .ticker-track{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;letter-spacing:1.5px;color:var(--ink);animation:ticker 26s linear infinite}
+  @keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-33.333%)}}
+  @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+  @keyframes scan{0%{transform:translateY(-100%)}100%{transform:translateY(100%)}}
+  @keyframes blink{0%,49%{opacity:1}50%,100%{opacity:0}}
+  @keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+  .container{max-width:640px;margin:0 auto;padding:36px 20px 32px}
+
+  header{margin-bottom:34px;padding-bottom:26px;border-bottom:1px solid var(--line);position:relative;display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+  header::after{content:"";position:absolute;left:0;bottom:-1px;width:56px;height:2px;background:var(--red)}
+  .header-copy{flex:1;min-width:0}
+  .eyebrow{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:4px;color:var(--red);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+  .eyebrow::before{content:"";width:6px;height:6px;background:var(--red);border-radius:50%;box-shadow:0 0 6px var(--red);animation:blink 1.6s step-start infinite}
+  h1{font-family:'Fraunces',serif;font-style:italic;font-size:42px;margin:0;font-weight:700;line-height:1.05;color:var(--paper)}
+  .subtitle{font-size:15px;color:var(--paper-dim);margin-top:14px;line-height:1.6;max-width:440px}
+  .candles{flex-shrink:0;width:64px;height:72px;opacity:.9;margin-top:2px}
+
+  .dropzone{
+    position:relative;
+    border:1px solid var(--line);
+    border-radius:2px;
+    padding:60px 24px;
+    text-align:center;
+    cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;gap:12px;
+    background:var(--ink-2);
+    transition:border-color .2s ease, background .2s ease;
+  }
+  .dropzone:hover{border-color:var(--green)}
+  .dropzone::before,.dropzone::after,.corner-tl,.corner-br{content:"";position:absolute;width:14px;height:14px;border:2px solid var(--paper-dim);opacity:.5}
+  .dropzone::before{top:-1px;left:-1px;border-right:none;border-bottom:none}
+  .dropzone::after{bottom:-1px;right:-1px;border-left:none;border-top:none}
+  .drop-icon{font-family:'JetBrains Mono',monospace;font-size:20px;color:var(--green);letter-spacing:2px}
+  .drop-text{font-size:15px;color:var(--paper)}
+  .drop-sub{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;color:var(--slate)}
+
+  .card{border:1px solid var(--line);border-radius:2px;overflow:hidden;background:var(--ink-2);display:none}
+  .card-top{position:relative;overflow:hidden}
+  .preview{width:100%;display:block;max-height:360px;object-fit:contain;background:#070A0E}
+  .scan-line{position:absolute;left:0;right:0;height:60px;background:linear-gradient(to bottom, transparent, rgba(95,217,138,0.2), transparent);animation:scan 1.6s linear infinite;pointer-events:none;display:none}
+  .card-top.scanning .scan-line{display:block}
+  .close-btn{position:absolute;top:10px;right:10px;background:var(--ink);border:1px solid var(--line);border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;color:var(--paper);cursor:pointer;font-size:14px;transition:border-color .15s ease,color .15s ease}
+  .close-btn:hover{border-color:var(--red);color:var(--red)}
+
+  .analyze-btn{
+    width:100%;padding:17px;background:var(--green);color:var(--ink);border:none;
+    font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+    cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;
+    transition:background .15s ease;
+  }
+  .analyze-btn:hover:not(:disabled){background:#3DB86D}
+  .analyze-btn:disabled{opacity:.7;cursor:default}
+  .spinner{width:13px;height:13px;border:2px solid rgba(11,15,20,0.3);border-top-color:var(--ink);border-radius:50%;animation:spin .8s linear infinite}
+
+  .error-box{display:none;align-items:center;gap:8px;padding:14px 18px;color:var(--red);font-family:'JetBrains Mono',monospace;font-size:12px;background:rgba(225,88,63,0.08);border-top:1px solid rgba(225,88,63,0.25)}
+
+  .result-box{display:none;padding:24px 22px 26px}
+  .result-label{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;color:var(--green);margin-bottom:4px;display:flex;align-items:center;justify-content:space-between}
+  .result-label .stamp{color:var(--slate);letter-spacing:1px;font-size:10px}
+  .result-rule{border:none;border-top:1px dashed var(--line);margin:10px 0 16px}
+  .result-text{font-size:16px;line-height:1.65;color:var(--paper);margin:0;white-space:pre-wrap;font-family:'Manrope',sans-serif}
+  .result-text .word{opacity:0;animation:rise .35s ease forwards}
+
+  .again-btn{margin-top:20px;background:none;border:1px solid var(--line);color:var(--paper-dim);padding:11px 18px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:1px;cursor:pointer;border-radius:2px;transition:border-color .15s ease,color .15s ease}
+  .again-btn:hover{border-color:var(--red);color:var(--red)}
+
+  footer{margin-top:36px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.5px;color:var(--slate);line-height:1.6;text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px}
+  .tiktok-link{display:inline-flex;align-items:center;gap:7px;color:var(--paper-dim);text-decoration:none;padding:9px 16px;border:1px solid var(--line);border-radius:2px;transition:border-color .15s ease,color .15s ease}
+  .tiktok-link:hover{border-color:var(--red);color:var(--paper)}
+  .tiktok-link svg{width:14px;height:14px;fill:currentColor}
+
+  input[type=file]{display:none}
+
+  @media (max-width:480px){
+    h1{font-size:27px}
+    .container{padding:28px 16px 26px}
+    header{margin-bottom:26px;padding-bottom:20px}
+    .candles{width:44px;height:52px}
+    .dropzone{padding:44px 18px}
+    .analyze-btn{padding:16px}
+    .result-text{font-size:15px}
+  }
+</style>
+</head>
+<body>
+
+<div class="ticker-bar"><div class="ticker-track" id="tickerTrack"></div></div>
+
+<div class="container">
+  <header>
+    <div class="header-copy">
+      <div class="eyebrow">MARKET DESK — LIVE</div>
+      <h1>Chart, Explained.</h1>
+      <p class="subtitle">Drop in a screenshot of a stock, index, forex, or crypto chart — including MetaTrader. We'll read the move and pull the likely reason from recent news, or tell you if it's just noise.</p>
+    </div>
+    <svg class="candles" viewBox="0 0 64 72" xmlns="http://www.w3.org/2000/svg">
+      <line x1="6" y1="8" x2="6" y2="30" stroke="#8FA0B3" stroke-width="1" opacity="0.5"/>
+      <rect x="2" y="14" width="8" height="12" fill="var(--red)"/>
+      <line x1="19" y1="4" x2="19" y2="26" stroke="#8FA0B3" stroke-width="1" opacity="0.5"/>
+      <rect x="15" y="10" width="8" height="9" fill="var(--green)"/>
+      <line x1="32" y1="18" x2="32" y2="48" stroke="#8FA0B3" stroke-width="1" opacity="0.5"/>
+      <rect x="28" y="24" width="8" height="16" fill="var(--red)"/>
+      <line x1="45" y1="30" x2="45" y2="58" stroke="#8FA0B3" stroke-width="1" opacity="0.5"/>
+      <rect x="41" y="34" width="8" height="18" fill="var(--green)"/>
+      <line x1="58" y1="26" x2="58" y2="52" stroke="#8FA0B3" stroke-width="1" opacity="0.5"/>
+      <rect x="54" y="30" width="8" height="14" fill="var(--green)"/>
+    </svg>
+  </header>
+
+  <div class="dropzone" id="dropzone">
+    <div class="drop-icon">◤ ◢</div>
+    <div class="drop-text">Drop a chart screenshot, or click to browse</div>
+    <div class="drop-sub">PNG · JPG · WEBP — UP TO 10MB</div>
+    <input type="file" id="fileInput" accept="image/*" />
+  </div>
+
+  <div class="card" id="card">
+    <div class="card-top" id="cardTop">
+      <img class="preview" id="preview" src="" alt="Uploaded chart" />
+      <div class="scan-line"></div>
+      <button class="close-btn" id="closeBtn">✕</button>
+    </div>
+    <button class="analyze-btn" id="analyzeBtn">Explain this move</button>
+    <div class="error-box" id="errorBox"></div>
+    <div class="result-box" id="resultBox">
+      <div class="result-label"><span>ON THE TAPE</span><span class="stamp" id="stamp"></span></div>
+      <hr class="result-rule" />
+      <p class="result-text" id="resultText"></p>
+      <button class="again-btn" id="againBtn">Analyze another →</button>
+    </div>
+  </div>
+
+  <footer>
+    <span>Not investment advice.</span>
+    <a class="tiktok-link" href="https://www.tiktok.com/@s.o.r.e.l" target="_blank" rel="noopener noreferrer">
+      <svg viewBox="0 0 448 512"><path d="M448,209.91a210.06,210.06,0,0,1-122.77-39.25V349.38A162.55,162.55,0,1,1,185.13,188.31V278.22a74.62,74.62,0,1,0,52.23,71.16V0l88,0a121.18,121.18,0,0,0,1.86,22.17h0A122.18,122.18,0,0,0,381,102.39a121.43,121.43,0,0,0,67,20.14Z"/></svg>
+      <span>@s.o.r.e.l</span>
+    </a>
+  </footer>
+</div>
+
+<script>
+document.getElementById('tickerTrack').textContent =
+  "SPX 6,318.4 ▲0.42% · BTC 118,240 ▼1.05% · EUR/USD 1.0871 ▲0.08% · XAU 2,411.6 ▲0.61% · NDQ 22,904 ▲0.55% · ".repeat(3);
+
+const dropzone=document.getElementById('dropzone');
+const fileInput=document.getElementById('fileInput');
+const card=document.getElementById('card');
+const cardTop=document.getElementById('cardTop');
+const preview=document.getElementById('preview');
+const closeBtn=document.getElementById('closeBtn');
+const analyzeBtn=document.getElementById('analyzeBtn');
+const errorBox=document.getElementById('errorBox');
+const resultBox=document.getElementById('resultBox');
+const resultText=document.getElementById('resultText');
+const stamp=document.getElementById('stamp');
+const againBtn=document.getElementById('againBtn');
+let currentFile=null;
+
+dropzone.addEventListener('click',()=>fileInput.click());
+dropzone.addEventListener('dragover',(e)=>e.preventDefault());
+dropzone.addEventListener('drop',(e)=>{e.preventDefault();if(e.dataTransfer.files?.[0])handleFile(e.dataTransfer.files[0]);});
+fileInput.addEventListener('change',(e)=>{if(e.target.files?.[0])handleFile(e.target.files[0]);});
+closeBtn.addEventListener('click',reset);
+againBtn.addEventListener('click',reset);
+analyzeBtn.addEventListener('click',analyze);
+
+function handleFile(file){
+  if(!file.type.startsWith('image/'))return;
+  const img=new Image();
+  const reader=new FileReader();
+  reader.onload=()=>{
+    img.onload=()=>{
+      const maxDim=1400;
+      let{width,height}=img;
+      if(width>maxDim||height>maxDim){const scale=maxDim/Math.max(width,height);width=Math.round(width*scale);height=Math.round(height*scale);}
+      const canvas=document.createElement('canvas');
+      canvas.width=width;canvas.height=height;
+      canvas.getContext('2d').drawImage(img,0,0,width,height);
+      canvas.toBlob((blob)=>{
+        currentFile=blob;
+        preview.src=canvas.toDataURL('image/jpeg',0.9);
+        dropzone.style.display='none';
+        card.style.display='block';
+        resultBox.style.display='none';
+        errorBox.style.display='none';
+        analyzeBtn.style.display='flex';
+        analyzeBtn.disabled=false;
+        analyzeBtn.textContent='Explain this move';
+      },'image/jpeg',0.9);
+    };
+    img.src=reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function analyze(){
+  if(!currentFile)return;
+  analyzeBtn.disabled=true;
+  analyzeBtn.innerHTML='<span class="spinner"></span> Reading the tape…';
+  errorBox.style.display='none';
+  cardTop.classList.add('scanning');
+  try{
+    const formData=new FormData();
+    formData.append('image',currentFile,'chart.jpg');
+    const res=await fetch('/api/analyze',{method:'POST',body:formData});
+    const data=await res.json();
+    if(!res.ok)throw new Error(data.error||'Something went wrong.');
+    printResult(data.analysis);
+    analyzeBtn.style.display='none';
+  }catch(err){
+    errorBox.textContent=err.message;
+    errorBox.style.display='flex';
+    analyzeBtn.disabled=false;
+    analyzeBtn.textContent='Explain this move';
+  }finally{
+    cardTop.classList.remove('scanning');
+  }
+}
+
+function printResult(text){
+  resultText.innerHTML='';
+  const now=new Date();
+  stamp.textContent=now.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})+' · '+now.toLocaleDateString([], {month:'short',day:'numeric'});
+  resultBox.style.display='block';
+  const words=text.split(/(\s+)/);
+  words.forEach((w,i)=>{
+    const span=document.createElement('span');
+    span.className='word';
+    span.textContent=w;
+    span.style.animationDelay=(i*10)+'ms';
+    resultText.appendChild(span);
+  });
+}
+
+function reset(){
+  currentFile=null;
+  fileInput.value='';
+  dropzone.style.display='flex';
+  card.style.display='none';
+  resultBox.style.display='none';
+  errorBox.style.display='none';
+  analyzeBtn.disabled=false;
+}
+</script>
+</body>
+</html>
