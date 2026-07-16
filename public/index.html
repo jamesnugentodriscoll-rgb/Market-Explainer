@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Chart, Explained.</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: #0F1B2D;
+    color: #EDE6D6;
+    font-family: Georgia, 'Times New Roman', serif;
+    min-height: 100vh;
+  }
+  .ticker-bar {
+    background: #C9A227;
+    overflow: hidden;
+    white-space: nowrap;
+    padding: 6px 0;
+  }
+  .ticker-track {
+    display: inline-block;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: #0F1B2D;
+    animation: ticker 22s linear infinite;
+  }
+  @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-33.333%); } }
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  .container { max-width: 640px; margin: 0 auto; padding: 48px 24px 32px; }
+  header { margin-bottom: 36px; border-bottom: 1px solid #2A3A52; padding-bottom: 24px; }
+  .eyebrow { font-family: 'Courier New', monospace; font-size: 12px; letter-spacing: 3px; color: #C9A227; margin-bottom: 10px; }
+  h1 { font-size: 38px; margin: 0; font-weight: 400; line-height: 1.15; color: #F4EFE2; }
+  .subtitle { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 15px; color: #A9B4C4; margin-top: 12px; line-height: 1.5; max-width: 
