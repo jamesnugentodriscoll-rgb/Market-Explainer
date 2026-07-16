@@ -1,158 +1,30 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>Chart, Explained.</title><style>*{box-sizing:border-box}body{margin:0;background:#0F1B2D;color:#EDE6D6;font-family:Georgia,serif;min-height:100vh}.ticker-bar{background:#C9A227;overflow:hidden;white-space:nowrap;padding:6px 0}.ticker-track{display:inline-block;font-family:monospace;font-size:12px;font-weight:700;letter-spacing:1px;color:#0F1B2D;animation:ticker 22s linear infinite}@keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-33.333%)}}@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}.container{max-width:640px;margin:0 auto;padding:48px 24px 32px}header{margin-bottom:36px;border-bottom:1px solid #2A3A52;padding-bottom:24px}.eyebrow{font-family:monospace;font-size:12px;letter-spacing:3px;color:#C9A227;margin-bottom:10px}h1{font-size:38px;margin:0;font-weight:400;line-height:1.15;color:#F4EFE2}.subtitle{font-family:Arial,sans-serif;font-size:15px;color:#A9B4C4;margin-top:12px;line-height:1.5;max-width:480px}.unlock-banner{display:none;align-items:center;justify-content:space-between;gap:12px;background:rgba(201,162,39,0.08);border:1px solid #C9A227;border-radius:4px;padding:12px 16px;margin-bottom:20px;font-family:Arial,sans-serif;font-size:13px;color:#EDE6D6}.unlock-banner strong{color:#C9A227}.dropzone{border:1px dashed #3D4F6B;border-radius:4px;padding:56px 24px;text-align:center;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:10px;background:rgba(201,162,39,0.03)}.drop-text{font-family:Arial,sans-serif;font-size:15px;color:#EDE6D6}.drop-sub{font-family:Arial,sans-serif;font-size:12px;color:#6E7C93}.card{border:1px solid #2A3A52;border-radius:4px;overflow:hidden;background:#111F33;display:none}.card-top{position:relative}.preview{width:100%;display:block;max-height:360px;object-fit:contain;background:#0A1626}.close-btn{position:absolute;top:10px;right:10px;background:#0F1B2D;border:1px solid #3D4F6B;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;color:#EDE6D6;cursor:pointer;font-size:14px}.analyze-btn{width:100%;padding:16px;background:#C9A227;color:#0F1B2D;border:none;font-family:Arial,sans-serif;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}.analyze-btn:disabled{opacity:0.6}.analyze-btn.paywall{background:#EDE6D6}.price-note{text-align:center;font-family:Arial,sans-serif;font-size:11px;color:#6E7C93;padding:8px 0 0;background:#111F33}.spinner{width:14px;height:14px;border:2px solid rgba(15,27,45,0.3);border-top-color:#0F1B2D;border-radius:50%;animation:spin 0.8s linear infinite}.error-box{display:none;align-items:center;gap:8px;padding:14px 16px;color:#E8B4A3;font-family:Arial,sans-serif;font-size:13px;background:rgba(179,69,44,0.1)}.result-box{display:none;padding:22px 20px 24px}.result-label{font-family:monospace;font-size:11px;letter-spacing:2px;color:#C9A227;margin-bottom:10px}.result-text{font-size:16px;line-height:1.6;color:#EDE6D6;margin:0;white-space:pre-wrap}.again-btn{margin-top:18px;background:none;border:1px solid #3D4F6B;color:#A9B4C4;padding:10px 16px;font-family:Arial,sans-serif;font-size:13px;cursor:pointer;border-radius:3px}footer{margin-top:32px;font-family:Arial,sans-serif;font-size:12px;color:#5C6A7F;line-height:1.5;text-align:center}input[type=file]{display:none}</style></head><body><div class="ticker-bar"><div class="ticker-track" id="tickerTrack"></div></div><div class="container"><header><div class="eyebrow">MARKET DESK</div><h1>Chart, Explained.</h1><p class="subtitle">Drop in a screenshot of a stock, index, forex, or crypto chart — including MetaTrader. We'll read the move and pull the likely reason from recent news, or tell you if it's just noise.</p></header><div class="unlock-banner" id="unlockBanner"><span>✓ <strong>Unlocked</strong> — unlimited analyses on this browser.</span></div><div class="dropzone" id="dropzone"><div class="drop-text">Drop a chart screenshot, or click to browse</div><div class="drop-sub">PNG or JPG, up to 10MB</div><input type="file" id="fileInput" accept="image/*" /></div><div class="card" id="card"><div class="card-top"><img class="preview" id="preview" src="" alt="Uploaded chart" /><button class="close-btn" id="closeBtn">✕</button></div><button class="analyze-btn" id="analyzeBtn">Explain this move</button><div class="price-note" id="priceNote">$4.99 for unlimited access, one time</div><div class="error-box" id="errorBox"></div><div class="result-box" id="resultBox"><div class="result-label">ON THE TAPE</div><p class="result-text" id="resultText"></p><button class="again-btn" id="againBtn">Analyze another</button></div></div><footer>This explains publicly reported context around a price move — it is not investment advice and it does not predict future moves.</footer></div>
-<script>
-document.getElementById('tickerTrack').textContent="WHAT MOVED, AND WHY · WHAT MOVED, AND WHY · WHAT MOVED, AND WHY · WHAT MOVED, AND WHY · ".repeat(3);
-const dropzone=document.getElementById('dropzone');
-const fileInput=document.getElementById('fileInput');
-const card=document.getElementById('card');
-const preview=document.getElementById('preview');
-const closeBtn=document.getElementById('closeBtn');
-const analyzeBtn=document.getElementById('analyzeBtn');
-const priceNote=document.getElementById('priceNote');
-const errorBox=document.getElementById('errorBox');
-const resultBox=document.getElementById('resultBox');
-const resultText=document.getElementById('resultText');
-const againBtn=document.getElementById('againBtn');
-const unlockBanner=document.getElementById('unlockBanner');
-let currentFile=null;
-let isPaid=false;
-
-function setPaidUI(paid){
-  isPaid=paid;
-  unlockBanner.style.display=paid?'flex':'none';
-  priceNote.style.display=paid?'none':'block';
-  analyzeBtn.textContent=paid?'Explain this move':'Unlock & explain this move — $4.99';
-}
-
-async function checkPaymentStatus(){
-  try{
-    const res=await fetch('/api/payment-status');
-    const data=await res.json();
-    setPaidUI(!!data.paid);
-  }catch(e){
-    setPaidUI(false);
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Chart, Explained.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;0,700;1,600&family=Manrope:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#070A0F;
+    --ink-2:#0C121B;
+    --paper:#DCE6EE;
+    --paper-dim:#8FA0B3;
+    --green:#2E9C5A;
+    --red:#D9291B;
+    --red-dim:#8F1D13;
+    --slate:#66768C;
+    --line:#1E2A3B;
   }
-}
-
-async function handleReturnFromCheckout(){
-  const params=new URLSearchParams(window.location.search);
-  const sessionId=params.get('session_id');
-  const canceled=params.get('canceled');
-  if(sessionId){
-    try{
-      const res=await fetch('/api/verify-session?session_id='+encodeURIComponent(sessionId));
-      const data=await res.json();
-      if(data.paid){setPaidUI(true);}
-    }catch(e){}
-    window.history.replaceState({},'',window.location.pathname);
-  }else if(canceled){
-    window.history.replaceState({},'',window.location.pathname);
-  }
-}
-
-dropzone.addEventListener('click',()=>fileInput.click());
-dropzone.addEventListener('dragover',(e)=>e.preventDefault());
-dropzone.addEventListener('drop',(e)=>{e.preventDefault();if(e.dataTransfer.files?.[0])handleFile(e.dataTransfer.files[0]);});
-fileInput.addEventListener('change',(e)=>{if(e.target.files?.[0])handleFile(e.target.files[0]);});
-closeBtn.addEventListener('click',reset);
-againBtn.addEventListener('click',reset);
-analyzeBtn.addEventListener('click',onAnalyzeClick);
-
-function handleFile(file){
-  if(!file.type.startsWith('image/'))return;
-  const img=new Image();
-  const reader=new FileReader();
-  reader.onload=()=>{
-    img.onload=()=>{
-      const maxDim=1400;
-      let{width,height}=img;
-      if(width>maxDim||height>maxDim){const scale=maxDim/Math.max(width,height);width=Math.round(width*scale);height=Math.round(height*scale);}
-      const canvas=document.createElement('canvas');
-      canvas.width=width;canvas.height=height;
-      canvas.getContext('2d').drawImage(img,0,0,width,height);
-      canvas.toBlob((blob)=>{
-        currentFile=blob;
-        preview.src=canvas.toDataURL('image/jpeg',0.9);
-        dropzone.style.display='none';
-        card.style.display='block';
-        resultBox.style.display='none';
-        errorBox.style.display='none';
-        analyzeBtn.style.display='flex';
-        priceNote.style.display=isPaid?'none':'block';
-      },'image/jpeg',0.9);
-    };
-    img.src=reader.result;
-  };
-  reader.readAsDataURL(file);
-}
-
-async function onAnalyzeClick(){
-  if(!isPaid){
-    return startCheckout();
-  }
-  analyze();
-}
-
-async function startCheckout(){
-  analyzeBtn.disabled=true;
-  analyzeBtn.innerHTML='<span class="spinner"></span> Redirecting to checkout…';
-  try{
-    const res=await fetch('/api/create-checkout-session',{method:'POST'});
-    const data=await res.json();
-    if(!res.ok||!data.url)throw new Error(data.error||'Could not start checkout.');
-    window.location.href=data.url;
-  }catch(err){
-    errorBox.textContent=err.message;
-    errorBox.style.display='flex';
-    analyzeBtn.disabled=false;
-    setPaidUI(false);
-  }
-}
-
-async function analyze(){
-  if(!currentFile)return;
-  analyzeBtn.disabled=true;
-  analyzeBtn.innerHTML='<span class="spinner"></span> Reading the tape…';
-  errorBox.style.display='none';
-  try{
-    const formData=new FormData();
-    formData.append('image',currentFile,'chart.jpg');
-    const res=await fetch('/api/analyze',{method:'POST',body:formData});
-    const data=await res.json();
-    if(res.status===402){
-      // Payment lapsed/cookie missing — fall back to checkout.
-      setPaidUI(false);
-      errorBox.textContent='Payment required. Please unlock access.';
-      errorBox.style.display='flex';
-      analyzeBtn.disabled=false;
-      return;
-    }
-    if(!res.ok)throw new Error(data.error||'Something went wrong.');
-    resultText.textContent=data.analysis;
-    resultBox.style.display='block';
-    analyzeBtn.style.display='none';
-    priceNote.style.display='none';
-  }catch(err){
-    errorBox.textContent=err.message;
-    errorBox.style.display='flex';
-    analyzeBtn.disabled=false;
-    analyzeBtn.textContent='Explain this move';
-  }
-}
-
-function reset(){
-  currentFile=null;
-  fileInput.value='';
-  dropzone.style.display='flex';
-  card.style.display='none';
-  resultBox.style.display='none';
-  errorBox.style.display='none';
-  analyzeBtn.disabled=false;
-  setPaidUI(isPaid);
-}
-
-(async function init(){
-  await handleReturnFromCheckout();
-  await checkPaymentStatus();
-})();
-</script>
-</body></html>
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    background:var(--ink);
+    background-image:
+      linear-gradient(rgba(102,131,163,0.055) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(102,131,163,0.055) 1px, transparent 1px);
+    background-size:34px 34px;
+    color:var(--paper);
+    font-family:'Manrope',sans-serif;
