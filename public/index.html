@@ -1,19 +1,22 @@
-html<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Chart, Explained.</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;0,700;1,600&family=Manrope:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;0,700;1,600&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --ink:#070A0F;
     --ink-2:#0C121B;
+    --ink-3:#111a27;
     --paper:#DCE6EE;
     --paper-dim:#8FA0B3;
-    --green:#2E9C5A;
-    --red:#D9291B;
+    --green:#2FBD6C;
+    --green-glow:#5CFFA8;
+    --red:#E23B2E;
+    --red-glow:#FF7A66;
     --red-dim:#8F1D13;
     --slate:#66768C;
     --line:#1E2A3B;
@@ -23,9 +26,10 @@ html<!DOCTYPE html>
     margin:0;
     background:var(--ink);
     background-image:
+      radial-gradient(ellipse 900px 500px at 50% -10%, rgba(47,189,108,0.10), transparent 60%),
       linear-gradient(rgba(102,131,163,0.055) 1px, transparent 1px),
       linear-gradient(90deg, rgba(102,131,163,0.055) 1px, transparent 1px);
-    background-size:34px 34px;
+    background-size:auto, 34px 34px, 34px 34px;
     color:var(--paper);
     font-family:'Manrope',sans-serif;
     min-height:100vh;
@@ -34,45 +38,76 @@ html<!DOCTYPE html>
   .ticker-bar{background:var(--green);overflow:hidden;white-space:nowrap;padding:7px 0;border-bottom:1px solid #1f6b42}
   .ticker-track{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;letter-spacing:1.5px;color:var(--ink);animation:ticker 26s linear infinite}
   @keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-33.333%)}}
+  @keyframes candleScroll{from{transform:translateX(0)}to{transform:translateX(-33.333%)}}
   @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
   @keyframes scan{0%{transform:translateY(-100%)}100%{transform:translateY(100%)}}
   @keyframes blink{0%,49%{opacity:1}50%,100%{opacity:0}}
   @keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes pulseGlow{0%,100%{opacity:.55}50%{opacity:1}}
+  @keyframes badgeIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+  @keyframes fillBar{from{width:0}}
+  @keyframes sweep{from{background-position:-200% 0}to{background-position:200% 0}}
 
-  .container{max-width:640px;margin:0 auto;padding:36px 20px 32px}
+  .container{max-width:640px;margin:0 auto;padding:0 20px 32px}
 
-  header{margin-bottom:34px;padding-bottom:26px;border-bottom:1px solid var(--line);position:relative;display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
-  header::after{content:"";position:absolute;left:0;bottom:-1px;width:56px;height:2px;background:var(--red)}
+  /* Candlestick hero */
+  .candle-hero{
+    position:relative;
+    height:118px;
+    margin:0 -20px 0;
+    overflow:hidden;
+    border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg, rgba(15,22,32,0.4), rgba(7,10,15,0.9));
+  }
+  .candle-hero::before,.candle-hero::after{
+    content:"";position:absolute;top:0;bottom:0;width:60px;z-index:2;pointer-events:none;
+  }
+  .candle-hero::before{left:0;background:linear-gradient(90deg, var(--ink), transparent)}
+  .candle-hero::after{right:0;background:linear-gradient(270deg, var(--ink), transparent)}
+  .candle-track{position:absolute;top:0;left:0;height:100%;display:flex;align-items:flex-end;animation:candleScroll 34s linear infinite;will-change:transform}
+  .candle-hero svg{display:block;height:100%}
+
+  header{max-width:640px;margin:0 auto;padding:30px 20px 26px;border-bottom:1px solid var(--line);position:relative;display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+  header::after{content:"";position:absolute;left:20px;bottom:-1px;width:56px;height:2px;background:var(--red);box-shadow:0 0 10px var(--red-glow)}
   .header-copy{flex:1;min-width:0}
   .eyebrow{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:4px;color:var(--red);margin-bottom:14px;display:flex;align-items:center;gap:8px}
-  .eyebrow::before{content:"";width:6px;height:6px;background:var(--red);border-radius:50%;box-shadow:0 0 6px var(--red);animation:blink 1.6s step-start infinite}
-  h1{font-family:'Fraunces',serif;font-style:italic;font-size:42px;margin:0;font-weight:700;line-height:1.05;color:var(--paper)}
+  .eyebrow::before{content:"";width:6px;height:6px;background:var(--red);border-radius:50%;box-shadow:0 0 8px var(--red-glow);animation:blink 1.6s step-start infinite}
+  h1{
+    font-family:'Fraunces',serif;font-style:italic;font-size:44px;margin:0;font-weight:700;line-height:1.05;
+    background:linear-gradient(100deg, var(--paper) 30%, var(--green-glow) 60%, var(--paper) 85%);
+    background-size:220% auto;
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    animation:sweep 7s ease-in-out infinite;
+  }
   .subtitle{font-size:15px;color:var(--paper-dim);margin-top:14px;line-height:1.6;max-width:440px}
-  .candles{flex-shrink:0;width:64px;height:72px;opacity:.9;margin-top:2px}
+  .candles-mark{flex-shrink:0;width:60px;height:68px;opacity:.9;margin-top:2px;filter:drop-shadow(0 0 6px rgba(47,189,108,0.35))}
+
+  .container-body{max-width:640px;margin:0 auto;padding:30px 20px 0}
 
   .dropzone{
     position:relative;
     border:1px solid var(--line);
-    border-radius:2px;
-    padding:60px 24px;
+    border-radius:3px;
+    padding:56px 24px;
     text-align:center;
     cursor:pointer;
     display:flex;flex-direction:column;align-items:center;gap:12px;
-    background:var(--ink-2);
-    transition:border-color .2s ease, background .2s ease;
+    background:linear-gradient(180deg, rgba(17,26,39,0.6), rgba(12,18,27,0.6));
+    backdrop-filter:blur(2px);
+    transition:border-color .2s ease, background .2s ease, transform .2s ease;
   }
-  .dropzone:hover{border-color:var(--green)}
-  .dropzone::before,.dropzone::after,.corner-tl,.corner-br{content:"";position:absolute;width:14px;height:14px;border:2px solid var(--paper-dim);opacity:.5}
+  .dropzone:hover{border-color:var(--green);transform:translateY(-2px)}
+  .dropzone::before,.dropzone::after{content:"";position:absolute;width:14px;height:14px;border:2px solid var(--paper-dim);opacity:.5}
   .dropzone::before{top:-1px;left:-1px;border-right:none;border-bottom:none}
   .dropzone::after{bottom:-1px;right:-1px;border-left:none;border-top:none}
-  .drop-icon{font-family:'JetBrains Mono',monospace;font-size:20px;color:var(--green);letter-spacing:2px}
+  .drop-icon{font-family:'JetBrains Mono',monospace;font-size:20px;color:var(--green);letter-spacing:2px;text-shadow:0 0 10px rgba(47,189,108,0.5)}
   .drop-text{font-size:15px;color:var(--paper)}
   .drop-sub{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;color:var(--slate)}
 
-  .card{border:1px solid var(--line);border-radius:2px;overflow:hidden;background:var(--ink-2);display:none}
+  .card{border:1px solid var(--line);border-radius:3px;overflow:hidden;background:linear-gradient(180deg, rgba(17,26,39,0.7), rgba(12,18,27,0.85));display:none;box-shadow:0 20px 60px -30px rgba(0,0,0,0.8)}
   .card-top{position:relative;overflow:hidden}
   .preview{width:100%;display:block;max-height:360px;object-fit:contain;background:#070A0E}
-  .scan-line{position:absolute;left:0;right:0;height:60px;background:linear-gradient(to bottom, transparent, rgba(95,217,138,0.2), transparent);animation:scan 1.6s linear infinite;pointer-events:none;display:none}
+  .scan-line{position:absolute;left:0;right:0;height:60px;background:linear-gradient(to bottom, transparent, rgba(95,217,138,0.25), transparent);animation:scan 1.6s linear infinite;pointer-events:none;display:none}
   .card-top.scanning .scan-line{display:block}
   .close-btn{position:absolute;top:10px;right:10px;background:var(--ink);border:1px solid var(--line);border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;color:var(--paper);cursor:pointer;font-size:14px;transition:border-color .15s ease,color .15s ease}
   .close-btn:hover{border-color:var(--red);color:var(--red)}
@@ -81,9 +116,9 @@ html<!DOCTYPE html>
     width:100%;padding:17px;background:var(--green);color:var(--ink);border:none;
     font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
     cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;
-    transition:background .15s ease;
+    transition:background .15s ease, box-shadow .15s ease;
   }
-  .analyze-btn:hover:not(:disabled){background:#3DB86D}
+  .analyze-btn:hover:not(:disabled){background:#3DD87F;box-shadow:0 0 24px -6px var(--green-glow)}
   .analyze-btn:disabled{opacity:.7;cursor:default}
   .spinner{width:13px;height:13px;border:2px solid rgba(11,15,20,0.3);border-top-color:var(--ink);border-radius:50%;animation:spin .8s linear infinite}
 
@@ -92,14 +127,55 @@ html<!DOCTYPE html>
   .result-box{display:none;padding:24px 22px 26px}
   .result-label{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;color:var(--green);margin-bottom:4px;display:flex;align-items:center;justify-content:space-between}
   .result-label .stamp{color:var(--slate);letter-spacing:1px;font-size:10px}
-  .result-rule{border:none;border-top:1px dashed var(--line);margin:10px 0 16px}
+  .result-rule{border:none;border-top:1px dashed var(--line);margin:10px 0 18px}
+
+  .sentiment-row{display:flex;align-items:center;gap:14px;margin-bottom:18px;flex-wrap:wrap}
+  .sentiment-badge{
+    font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;letter-spacing:2px;
+    padding:7px 14px;border-radius:20px;display:inline-flex;align-items:center;gap:7px;
+    animation:badgeIn .35s ease;
+  }
+  .sentiment-badge .dot{width:7px;height:7px;border-radius:50%}
+  .sentiment-badge.bullish{background:rgba(47,189,108,0.12);color:var(--green-glow);border:1px solid rgba(47,189,108,0.4)}
+  .sentiment-badge.bullish .dot{background:var(--green-glow);box-shadow:0 0 8px var(--green-glow)}
+  .sentiment-badge.bearish{background:rgba(226,59,46,0.12);color:var(--red-glow);border:1px solid rgba(226,59,46,0.4)}
+  .sentiment-badge.bearish .dot{background:var(--red-glow);box-shadow:0 0 8px var(--red-glow)}
+  .sentiment-badge.neutral{background:rgba(143,160,179,0.1);color:var(--paper-dim);border:1px solid rgba(143,160,179,0.3)}
+  .sentiment-badge.neutral .dot{background:var(--paper-dim)}
+
+  .confidence-wrap{flex:1;min-width:140px}
+  .confidence-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.5px;color:var(--slate);margin-bottom:5px;display:flex;justify-content:space-between}
+  .confidence-track{height:5px;border-radius:3px;background:var(--line);overflow:hidden}
+  .confidence-fill{height:100%;border-radius:3px;animation:fillBar 1s ease forwards}
+  .confidence-fill.bullish{background:linear-gradient(90deg, var(--green), var(--green-glow))}
+  .confidence-fill.bearish{background:linear-gradient(90deg, var(--red), var(--red-glow))}
+  .confidence-fill.neutral{background:var(--paper-dim)}
+
   .result-text{font-size:16px;line-height:1.65;color:var(--paper);margin:0;white-space:pre-wrap;font-family:'Manrope',sans-serif}
   .result-text .word{opacity:0;animation:rise .35s ease forwards}
 
-  .again-btn{margin-top:20px;background:none;border:1px solid var(--line);color:var(--paper-dim);padding:11px 18px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:1px;cursor:pointer;border-radius:2px;transition:border-color .15s ease,color .15s ease}
+  .result-actions{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+  .again-btn,.copy-btn{background:none;border:1px solid var(--line);color:var(--paper-dim);padding:11px 18px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:1px;cursor:pointer;border-radius:2px;transition:border-color .15s ease,color .15s ease}
   .again-btn:hover{border-color:var(--red);color:var(--red)}
+  .copy-btn:hover{border-color:var(--green);color:var(--green-glow)}
+  .copy-btn.copied{border-color:var(--green);color:var(--green-glow)}
 
-  footer{margin-top:36px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.5px;color:var(--slate);line-height:1.6;text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px}
+  .history{max-width:640px;margin:34px auto 0;padding:0 20px}
+  .history-label{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;color:var(--slate);margin-bottom:12px}
+  .history-rail{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px}
+  .history-chip{
+    flex-shrink:0;width:64px;height:64px;border-radius:3px;border:1px solid var(--line);
+    background-size:cover;background-position:center;cursor:pointer;position:relative;overflow:hidden;
+    transition:border-color .15s ease,transform .15s ease;
+  }
+  .history-chip:hover{border-color:var(--paper-dim);transform:translateY(-2px)}
+  .history-chip .tag{position:absolute;bottom:0;left:0;right:0;height:4px}
+  .history-chip .tag.bullish{background:var(--green)}
+  .history-chip .tag.bearish{background:var(--red)}
+  .history-chip .tag.neutral{background:var(--paper-dim)}
+  .history-empty{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--slate);letter-spacing:.5px}
+
+  footer{max-width:640px;margin:36px auto 0;padding:26px 20px 0;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.5px;color:var(--slate);line-height:1.6;text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px;border-top:1px solid var(--line)}
   .tiktok-link{display:inline-flex;align-items:center;gap:7px;color:var(--paper-dim);text-decoration:none;padding:9px 16px;border:1px solid var(--line);border-radius:2px;transition:border-color .15s ease,color .15s ease}
   .tiktok-link:hover{border-color:var(--red);color:var(--paper)}
   .tiktok-link svg{width:14px;height:14px;fill:currentColor}
@@ -107,13 +183,18 @@ html<!DOCTYPE html>
   input[type=file]{display:none}
 
   @media (max-width:480px){
-    h1{font-size:27px}
-    .container{padding:28px 16px 26px}
-    header{margin-bottom:26px;padding-bottom:20px}
-    .candles{width:44px;height:52px}
+    h1{font-size:29px}
+    header{padding:24px 16px 20px}
+    .container-body{padding:24px 16px 0}
+    .candles-mark{width:42px;height:48px}
     .dropzone{padding:44px 18px}
     .analyze-btn{padding:16px}
     .result-text{font-size:15px}
+    .candle-hero{margin:0}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .candle-track,h1,.eyebrow::before,.scan-line{animation:none !important}
   }
 </style>
 </head>
@@ -121,27 +202,29 @@ html<!DOCTYPE html>
 
 <div class="ticker-bar"><div class="ticker-track" id="tickerTrack"></div></div>
 
-<div class="container">
-  <header>
-    <div class="header-copy">
-      <div class="eyebrow">MARKET DESK — LIVE</div>
-      <h1>Chart, Explained.</h1>
-      <p class="subtitle">Drop in a screenshot of a stock, index, forex, or crypto chart — including MetaTrader. We'll read the move and pull the likely reason from recent news, or tell you if it's just noise.</p>
-    </div>
-    <svg class="candles" viewBox="0 0 64 72" xmlns="http://www.w3.org/2000/svg">
-      <line x1="6" y1="8" x2="6" y2="30" stroke="#8FA0B3" stroke-width="1" opacity="0.5"/>
-      <rect x="2" y="14" width="8" height="12" fill="var(--red)"/>
-      <line x1="19" y1="4" x2="19" y2="26" stroke="#8FA0B3" stroke-width="1" opacity="0.5"/>
-      <rect x="15" y="10" width="8" height="9" fill="var(--green)"/>
-      <line x1="32" y1="18" x2="32" y2="48" stroke="#8FA0B3" stroke-width="1" opacity="0.5"/>
-      <rect x="28" y="24" width="8" height="16" fill="var(--red)"/>
-      <line x1="45" y1="30" x2="45" y2="58" stroke="#8FA0B3" stroke-width="1" opacity="0.5"/>
-      <rect x="41" y="34" width="8" height="18" fill="var(--green)"/>
-      <line x1="58" y1="26" x2="58" y2="52" stroke="#8FA0B3" stroke-width="1" opacity="0.5"/>
-      <rect x="54" y="30" width="8" height="14" fill="var(--green)"/>
-    </svg>
-  </header>
+<div class="candle-hero" id="candleHero"></div>
 
+<header>
+  <div class="header-copy">
+    <div class="eyebrow">MARKET DESK — LIVE</div>
+    <h1>Chart, Explained.</h1>
+    <p class="subtitle">Drop in a screenshot of a stock, index, forex, or crypto chart — including MetaTrader. We'll read the candles, pull the likely reason from recent news, and call the near-term lean.</p>
+  </div>
+  <svg class="candles-mark" viewBox="0 0 64 72" xmlns="http://www.w3.org/2000/svg">
+    <line x1="6" y1="8" x2="6" y2="30" stroke="#8FA0B3" stroke-width="1" opacity="0.5"/>
+    <rect x="2" y="14" width="8" height="12" fill="var(--red)"/>
+    <line x1="19" y1="4" x2="19" y2="26" stroke="#8FA0B3" stroke-width="1" opacity="0.5"/>
+    <rect x="15" y="10" width="8" height="9" fill="var(--green)"/>
+    <line x1="32" y1="18" x2="32" y2="48" stroke="#8FA0B3" stroke-width="1" opacity="0.5"/>
+    <rect x="28" y="24" width="8" height="16" fill="var(--red)"/>
+    <line x1="45" y1="30" x2="45" y2="58" stroke="#8FA0B3" stroke-width="1" opacity="0.5"/>
+    <rect x="41" y="34" width="8" height="18" fill="var(--green)"/>
+    <line x1="58" y1="26" x2="58" y2="52" stroke="#8FA0B3" stroke-width="1" opacity="0.5"/>
+    <rect x="54" y="30" width="8" height="14" fill="var(--green)"/>
+  </svg>
+</header>
+
+<div class="container-body">
   <div class="dropzone" id="dropzone">
     <div class="drop-icon">◤ ◢</div>
     <div class="drop-text">Drop a chart screenshot, or click to browse</div>
@@ -160,24 +243,76 @@ html<!DOCTYPE html>
     <div class="result-box" id="resultBox">
       <div class="result-label"><span>ON THE TAPE</span><span class="stamp" id="stamp"></span></div>
       <hr class="result-rule" />
+      <div class="sentiment-row" id="sentimentRow"></div>
       <p class="result-text" id="resultText"></p>
-      <button class="again-btn" id="againBtn">Analyze another →</button>
+      <div class="result-actions">
+        <button class="copy-btn" id="copyBtn">Copy read</button>
+        <button class="again-btn" id="againBtn">Analyze another →</button>
+      </div>
     </div>
   </div>
 
-  <footer>
-    <span>Not investment advice.</span>
-    <a class="tiktok-link" href="https://www.tiktok.com/@s.o.r.e.l" target="_blank" rel="noopener noreferrer">
-      <svg viewBox="0 0 448 512"><path d="M448,209.91a210.06,210.06,0,0,1-122.77-39.25V349.38A162.55,162.55,0,1,1,185.13,188.31V278.22a74.62,74.62,0,1,0,52.23,71.16V0l88,0a121.18,121.18,0,0,0,1.86,22.17h0A122.18,122.18,0,0,0,381,102.39a121.43,121.43,0,0,0,67,20.14Z"/></svg>
-      <span>@s.o.r.e.l</span>
-    </a>
-  </footer>
+  <div class="history">
+    <div class="history-label">RECENT READS</div>
+    <div class="history-rail" id="historyRail">
+      <span class="history-empty" id="historyEmpty">Your last few chart reads will show up here.</span>
+    </div>
+  </div>
 </div>
+
+<footer>
+  <span>Not investment advice.</span>
+  <a class="tiktok-link" href="https://www.tiktok.com/@s.o.r.e.l" target="_blank" rel="noopener noreferrer">
+    <svg viewBox="0 0 448 512"><path d="M448,209.91a210.06,210.06,0,0,1-122.77-39.25V349.38A162.55,162.55,0,1,1,185.13,188.31V278.22a74.62,74.62,0,1,0,52.23,71.16V0l88,0a121.18,121.18,0,0,0,1.86,22.17h0A122.18,122.18,0,0,0,381,102.39a121.43,121.43,0,0,0,67,20.14Z"/></svg>
+    <span>@s.o.r.e.l</span>
+  </a>
+</footer>
 
 <script>
 document.getElementById('tickerTrack').textContent =
   "SPX 6,318.4 ▲0.42% · BTC 118,240 ▼1.05% · EUR/USD 1.0871 ▲0.08% · XAU 2,411.6 ▲0.61% · NDQ 22,904 ▲0.55% · ".repeat(3);
 
+/* ---------- Decorative animated candlestick hero ---------- */
+(function buildCandleHero(){
+  const host = document.getElementById('candleHero');
+  const w = 900, h = 118, count = 46, candleW = w / count;
+  let price = h * 0.5, points = [];
+  for (let i = 0; i < count; i++){
+    const open = price;
+    const drift = (Math.random() - 0.48) * 22;
+    const close = Math.max(14, Math.min(h - 14, open + drift));
+    const wickHigh = Math.max(open, close) + Math.random() * 10;
+    const wickLow = Math.min(open, close) - Math.random() * 10;
+    points.push({ open, close, high: Math.max(0, wickHigh), low: Math.min(h, wickLow) });
+    price = close;
+  }
+  function renderGroup(){
+    let g = '';
+    points.forEach((p, i) => {
+      const x = i * candleW + candleW * 0.2;
+      const bw = candleW * 0.6;
+      const up = p.close < p.open; // svg y grows downward; "up" visually = close above open
+      const color = up ? 'var(--green)' : 'var(--red)';
+      const glow = up ? 'var(--green-glow)' : 'var(--red-glow)';
+      const yTop = Math.min(p.open, p.close);
+      const bodyH = Math.max(2, Math.abs(p.close - p.open));
+      g += `<line x1="${x + bw/2}" y1="${p.high}" x2="${x + bw/2}" y2="${p.low}" stroke="${color}" stroke-width="1" opacity="0.55"/>`;
+      g += `<rect x="${x}" y="${yTop}" width="${bw}" height="${bodyH}" fill="${color}" opacity="0.92" style="filter:drop-shadow(0 0 3px ${glow})"/>`;
+    });
+    return g;
+  }
+  const groupSVG = renderGroup();
+  const track = document.createElement('div');
+  track.className = 'candle-track';
+  track.innerHTML = `<svg viewBox="0 0 ${w} ${h}" width="${w*3}" height="${h}" preserveAspectRatio="none">
+      <g>${groupSVG}</g>
+      <g transform="translate(${w},0)">${groupSVG}</g>
+      <g transform="translate(${w*2},0)">${groupSVG}</g>
+    </svg>`;
+  host.appendChild(track);
+})();
+
+/* ---------- Core upload / analyze flow ---------- */
 const dropzone=document.getElementById('dropzone');
 const fileInput=document.getElementById('fileInput');
 const card=document.getElementById('card');
@@ -188,9 +323,15 @@ const analyzeBtn=document.getElementById('analyzeBtn');
 const errorBox=document.getElementById('errorBox');
 const resultBox=document.getElementById('resultBox');
 const resultText=document.getElementById('resultText');
+const sentimentRow=document.getElementById('sentimentRow');
 const stamp=document.getElementById('stamp');
 const againBtn=document.getElementById('againBtn');
+const copyBtn=document.getElementById('copyBtn');
+const historyRail=document.getElementById('historyRail');
+const historyEmpty=document.getElementById('historyEmpty');
 let currentFile=null;
+let currentThumb=null;
+let currentResult=null;
 
 dropzone.addEventListener('click',()=>fileInput.click());
 dropzone.addEventListener('dragover',(e)=>e.preventDefault());
@@ -199,6 +340,7 @@ fileInput.addEventListener('change',(e)=>{if(e.target.files?.[0])handleFile(e.ta
 closeBtn.addEventListener('click',reset);
 againBtn.addEventListener('click',reset);
 analyzeBtn.addEventListener('click',analyze);
+copyBtn.addEventListener('click',copyResult);
 
 function handleFile(file){
   if(!file.type.startsWith('image/'))return;
@@ -214,7 +356,15 @@ function handleFile(file){
       canvas.getContext('2d').drawImage(img,0,0,width,height);
       canvas.toBlob((blob)=>{
         currentFile=blob;
-        preview.src=canvas.toDataURL('image/jpeg',0.9);
+        const dataUrl=canvas.toDataURL('image/jpeg',0.9);
+        preview.src=dataUrl;
+        // small thumbnail for history
+        const thumbCanvas=document.createElement('canvas');
+        thumbCanvas.width=96;thumbCanvas.height=96;
+        const scale=Math.max(96/width,96/height);
+        const tw=width*scale, th=height*scale;
+        thumbCanvas.getContext('2d').drawImage(canvas,(96-tw)/2,(96-th)/2,tw,th);
+        currentThumb=thumbCanvas.toDataURL('image/jpeg',0.7);
         dropzone.style.display='none';
         card.style.display='block';
         resultBox.style.display='none';
@@ -241,7 +391,13 @@ async function analyze(){
     const res=await fetch('/api/analyze',{method:'POST',body:formData});
     const data=await res.json();
     if(!res.ok)throw new Error(data.error||'Something went wrong.');
-    printResult(data.analysis);
+    currentResult={
+      sentiment:(data.sentiment||'neutral').toLowerCase(),
+      confidence:typeof data.confidence==='number'?data.confidence:null,
+      analysis:data.analysis||''
+    };
+    printResult(currentResult);
+    saveToHistory(currentResult, currentThumb);
     analyzeBtn.style.display='none';
   }catch(err){
     errorBox.textContent=err.message;
@@ -253,12 +409,31 @@ async function analyze(){
   }
 }
 
-function printResult(text){
+function sentimentLabel(s){
+  if(s==='bullish')return 'BULLISH — LEANING UP';
+  if(s==='bearish')return 'BEARISH — LEANING DOWN';
+  return 'NEUTRAL — NO CLEAR LEAN';
+}
+
+function renderSentiment(result){
+  const s = ['bullish','bearish','neutral'].includes(result.sentiment) ? result.sentiment : 'neutral';
+  const conf = result.confidence!=null ? Math.max(0,Math.min(100,Math.round(result.confidence))) : null;
+  sentimentRow.innerHTML = `
+    <span class="sentiment-badge ${s}"><span class="dot"></span>${sentimentLabel(s)}</span>
+    ${conf!=null ? `<div class="confidence-wrap">
+      <div class="confidence-label"><span>CONVICTION</span><span>${conf}%</span></div>
+      <div class="confidence-track"><div class="confidence-fill ${s}" style="width:${conf}%"></div></div>
+    </div>` : ''}
+  `;
+}
+
+function printResult(result){
   resultText.innerHTML='';
   const now=new Date();
   stamp.textContent=now.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})+' · '+now.toLocaleDateString([], {month:'short',day:'numeric'});
   resultBox.style.display='block';
-  const words=text.split(/(\s+)/);
+  renderSentiment(result);
+  const words=result.analysis.split(/(\s+)/);
   words.forEach((w,i)=>{
     const span=document.createElement('span');
     span.className='word';
@@ -266,10 +441,24 @@ function printResult(text){
     span.style.animationDelay=(i*10)+'ms';
     resultText.appendChild(span);
   });
+  copyBtn.textContent='Copy read';
+  copyBtn.classList.remove('copied');
+}
+
+function copyResult(){
+  if(!currentResult)return;
+  const text=`${sentimentLabel(currentResult.sentiment)}\n\n${currentResult.analysis}`;
+  navigator.clipboard.writeText(text).then(()=>{
+    copyBtn.textContent='Copied ✓';
+    copyBtn.classList.add('copied');
+    setTimeout(()=>{copyBtn.textContent='Copy read';copyBtn.classList.remove('copied');},1800);
+  });
 }
 
 function reset(){
   currentFile=null;
+  currentThumb=null;
+  currentResult=null;
   fileInput.value='';
   dropzone.style.display='flex';
   card.style.display='none';
@@ -277,6 +466,43 @@ function reset(){
   errorBox.style.display='none';
   analyzeBtn.disabled=false;
 }
+
+/* ---------- Session history (localStorage, client-side only) ---------- */
+const HISTORY_KEY='chartExplainerHistory';
+function loadHistory(){
+  try{ return JSON.parse(localStorage.getItem(HISTORY_KEY)) || []; }catch(e){ return []; }
+}
+function saveToHistory(result, thumb){
+  const list=loadHistory();
+  list.unshift({ ...result, thumb, ts:Date.now() });
+  const trimmed=list.slice(0,8);
+  try{ localStorage.setItem(HISTORY_KEY, JSON.stringify(trimmed)); }catch(e){}
+  renderHistory();
+}
+function renderHistory(){
+  const list=loadHistory();
+  historyRail.querySelectorAll('.history-chip').forEach(el=>el.remove());
+  historyEmpty.style.display = list.length ? 'none' : 'block';
+  list.forEach(item=>{
+    const chip=document.createElement('div');
+    chip.className='history-chip';
+    chip.style.backgroundImage=`url(${item.thumb})`;
+    chip.title=sentimentLabel(item.sentiment);
+    const tag=document.createElement('div');
+    tag.className=`tag ${item.sentiment}`;
+    chip.appendChild(tag);
+    chip.addEventListener('click',()=>{
+      dropzone.style.display='none';
+      card.style.display='block';
+      preview.src=item.thumb;
+      analyzeBtn.style.display='none';
+      currentResult=item;
+      printResult(item);
+    });
+    historyRail.appendChild(chip);
+  });
+}
+renderHistory();
 </script>
 </body>
 </html>
