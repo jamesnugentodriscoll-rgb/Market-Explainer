@@ -1,24 +1,26 @@
+
 require("dotenv").config();
 const express = require("express");
 const multer = require("multer");
 const fetch = require("node-fetch");
 const path = require("path");
-
+ 
 const app = express();
 const upload = multer({
+  storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024 },
 });
-
+ 
 const PORT = process.env.PORT || 3000;
 const API_KEY = process.env.ANTHROPIC_API_KEY;
-
+ 
 if (!API_KEY) {
   console.warn("WARNING: ANTHROPIC_API_KEY is not set.");
 }
-
+ 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
-
+ 
 app.post("/api/analyze", upload.single("image"), async (req, res) => {
   try {
     if (!req.file) {
@@ -27,14 +29,14 @@ app.post("/api/analyze", upload.single("image"), async (req, res) => {
     if (!API_KEY) {
       return res.status(500).json({ error: "Server is missing its API key." });
     }
-
+ 
     const base64 = req.file.buffer.toString("base64");
     const mediaType = req.file.mimetype;
-
+ 
     if (!["image/png", "image/jpeg", "image/webp", "image/gif"].includes(mediaType)) {
       return res.status(400).json({ error: "Please upload a PNG, JPG, WEBP, or GIF image." });
     }
-
+ 
     const anthropicRes = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
@@ -47,7 +49,7 @@ app.post("/api/analyze", upload.single("image"), async (req, res) => {
         max_tokens: 2048,
         tools: [{ type: "web_search_20250305", name: "web_search" }],
         system:
-          "You are a sharp, experienced markets analyst who reads price charts the way a professional trading-desk analyst would: fluent in both technical structure (trend, support/resistance, volume, candlestick patterns, breakouts, divergences) and the fundamental/macro backdrop (earnings, guidance, economic data, central bank decisions, geopolitical events). You are precise about what the chart actually shows versus what you're inferring, and you never state a cause as certain when it's a plausible, publicly reported explanation.",
+          "You are a sharp, experienced markets analyst who reads price charts the way a professional trading-desk analyst would: fluent in both technical structure (trend, support/resistance, volume, candlestick patterns, breakouts, divergences) and the fundamental/macro backdrop (earnings, guidance, economic data, central bank decisions, geopolitical events). You are precise about what the chart actually shows versus what you're inferring, and you never state a cause as certain when it's a plausible, publicly reported explanation. You respond with a single raw JSON object and nothing else — no markdown code fences, no commentary before or after it.",
         messages: [
           {
             role: "user",
@@ -58,14 +60,14 @@ app.post("/api/analyze", upload.single("image"), async (req, res) => {
               },
               {
                 type: "text",
-                text: "This is a screenshot of a financial chart — a stock, index, forex pair, or crypto, on any timeframe from 1-minute to monthly (it may be from a trading platform like MetaTrader). Read it carefully: identify the instrument and timeframe from any visible labels/axes, then describe the price action precisely — direction and rough size of the move, where it sits relative to recent structure (breaking a range, testing a prior high/low, gapping, reversing a trend), and any notable candlestick or volume pattern. Then search the web for the most relevant recent news, earnings, guidance, economic data releases, or central bank action around the relevant date/time that plausibly explains the move — search for the specific instrument and date, not just generic market news. If the timeframe is short and the move is small, say plainly this scale of move is normal short-term noise rather than reaching for a news explanation. Be explicit that any cause given is the publicly reported likely explanation, not a certainty — markets often move for multiple overlapping reasons. Keep the whole answer under 220 words, no markdown headers, plain prose in 2-3 tight paragraphs.",
+                text: "This is a screenshot of a financial chart — a stock, index, forex pair, or crypto, on any timeframe from 1-minute to monthly (it may be from a trading platform like MetaTrader). Read it carefully: identify the instrument and timeframe from any visible labels/axes, then look at the price action — direction and rough size of the move, where it sits relative to recent structure (breaking a range, testing a prior high/low, gapping, reversing a trend), and the candle coloring itself (a run of green/up candles is a bullish momentum signal, a run of red/down candles is a bearish one — treat this as your primary near-term lean unless the structure or news clearly argues against it). Then search the web for the most relevant recent news, earnings, guidance, economic data, or central bank action around the relevant date/time that plausibly explains the move — search for the specific instrument and date, not generic market news. If the timeframe is short and the move is small, treat it as normal noise rather than inventing a catalyst, and lower your confidence accordingly. Weigh candle momentum, chart structure, and any news you find together into one near-term lean.\n\nRespond with ONLY a raw JSON object, no markdown fences, matching exactly this shape:\n{\"sentiment\": \"bullish\" | \"bearish\" | \"neutral\", \"confidence\": <integer 0-100>, \"analysis\": \"<2-3 tight sentences, plain prose, under 90 words, naming the instrument if visible, the move, the likely driver or 'just noise', and the near-term lean — phrase the lean as a read/heuristic, not a guarantee>\"}",
               },
             ],
           },
         ],
       }),
     });
-
+ 
     const raw = await anthropicRes.text();
     let data;
     try {
@@ -74,29 +76,56 @@ app.post("/api/analyze", upload.single("image"), async (req, res) => {
       console.error("Non-JSON response:", raw.slice(0, 500));
       return res.status(502).json({ error: "Unexpected response from the AI service." });
     }
-
+ 
     if (!anthropicRes.ok) {
       console.error("Anthropic API error:", data);
       return res.status(502).json({ error: data?.error?.message || "The AI service returned an error." });
     }
-
-    const text = (data.content || [])
-      .filter((block) => block.type === "text")
-      .map((block) => block.text)
-      .join("\n\n")
-      .trim();
-
-    if (!text) {
+ 
+    const textBlocks = (data.content || []).filter((block) => block.type === "text");
+    const lastText = textBlocks.length ? textBlocks[textBlocks.length - 1].text.trim() : "";
+ 
+    if (!lastText) {
       return res.status(502).json({ error: "No analysis came back. Try a clearer screenshot." });
     }
-
-    res.json({ analysis: text });
+ 
+    // Strip accidental ```json fences, then parse the structured reply.
+    const cleaned = lastText.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "").trim();
+ 
+    let parsed;
+    try {
+      parsed = JSON.parse(cleaned);
+    } catch (e) {
+      // Fall back to treating the whole reply as plain analysis text.
+      return res.json({ sentiment: "neutral", confidence: null, analysis: cleaned });
+    }
+ 
+    const sentiment = ["bullish", "bearish", "neutral"].includes(parsed.sentiment)
+      ? parsed.sentiment
+      : "neutral";
+    const confidence = Number.isFinite(parsed.confidence)
+      ? Math.max(0, Math.min(100, Math.round(parsed.confidence)))
+      : null;
+    const analysis = typeof parsed.analysis === "string" && parsed.analysis.trim()
+      ? parsed.analysis.trim()
+      : "No analysis came back. Try a clearer screenshot.";
+ 
+    res.json({ sentiment, confidence, analysis });
   } catch (err) {
     console.error("Server error:", err);
     res.status(500).json({ error: "Something went wrong on the server." });
   }
 });
-
+ 
+// Catches multer errors (oversized file, bad field, etc.) as JSON instead of
+// falling through to Express's default HTML error page.
+app.use((err, req, res, next) => {
+  if (err instanceof multer.MulterError || err) {
+    return res.status(400).json({ error: err.message || "Upload failed." });
+  }
+  next();
+});
+ 
 app.listen(PORT, () => {
   console.log(`Market Explainer running on http://localhost:${PORT}`);
 });
